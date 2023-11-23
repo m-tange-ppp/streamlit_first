@@ -4,6 +4,7 @@ import random
 from janome.tokenizer import Tokenizer
 
 st.title("読みにくい文章ジェネレーター")
+st.text("直接伝えるには恥ずかしい言葉も、もう大丈夫")
 with st.form(key="generate form"):
     option = st.selectbox("出力方法",("スペース区切り","一続き"))
     kugiri = " " if option == "スペース区切り" else ""
