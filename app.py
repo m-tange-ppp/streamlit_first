@@ -1,26 +1,30 @@
 import streamlit as st
+import MeCab
+import jaconv
+import random
 
-st.title("title") # タイトル
-st.header("header") # ヘッダー
-st.write("write") # 表示
-st.markdown("# markdown") # マークダウンで表示
-st.text("text") # テキスト表示
-st.button("button") # ボタン
-st.selectbox("selectbox", ("select1", "select2")) # セレクトボックス
-st.multiselect("multiselectbox", ("select1", "select2")) # 複数選択可能なセレクトボックス
-st.radio("radiobutton", ("radio1", "radio2")) # ラジオボタン
-st.text_input("text input") # 文字入力(1行)
-st.text_area("text area") # 文字入力(複数行)
-st.slider("slider", 0, 100, 50) # スライダー
-st.file_uploader("Choose file") # ファイルアップロード
-check = st.checkbox("check button") # チェックボタン
+st.title("読みにくい文章ジェネレーター")
+with st.form(key="generate form"):
+    option = st.selectbox("出力方法",("スペース区切り","一続き"))
+    kugiri = " " if option == "スペース区切り" else ""
+    text = st.text_input("文を入力してね")
+    output_button = st.form_submit_button("よくわからんくする")
+    
+    if output_button:
+        m = MeCab.Tagger()
+        node = m.parseToNode(text)
+        words = []
+        while node:
+            feature = node.feature.split(",")
+            if len(feature) == 6 or feature[0] =="補助記号": #英単語と記号
+                words.append(node.surface)
+            elif len(feature) > 19: #日本語
+                hira = jaconv.kata2hira(feature[20])
+                if len(hira) > 2:
+                    hira_naka = hira[1:]
+                    hira = hira[0] + "".join(random.sample(hira_naka, len(hira_naka)))
+                words.append(hira)
+            node = node.next
+        sentence = kugiri.join(words)
 
-if check:
-    st.button("button")
-    st.selectbox("selectbox", ("select1", "select2"))
-    st.multiselect("multiselectbox", ("select1", "select2"))
-    st.radio("radiobutton", ("radio1", "radio2"))
-    st.text_input("text input")
-    st.text_area("text area")
-    st.slider("slider", 0, 100, 50)
-    st.file_uploader("Choose file")
+        st.write(sentence)
